@@ -1,13 +1,14 @@
-# ESPCN
-A PyTorch implementation of ESPCN based on CVPR2016 paper 
-[Real-Time Single Image and Video Super-Resolution Using an Efficient Sub-Pixel Convolutional Neural Network](https://arxiv.org/abs/1609.05158)
+
+# VSRNet
+A PyTorch implementation of VSRNet
+[Video super-resolution with convolutional neural networks] (https://ieeexplore.ieee.org/abstract/document/7444187/)
 
 ## Requirements
 - [Anaconda](https://www.anaconda.com/download/)
 - PyTorch
 ```
 conda install pytorch torchvision -c soumith
-conda install pytorch torchvision cuda80 -c soumith # install it if you have installed cuda
+conda install pytorch torchvision cuda80 -c soumith # install it if you have installed cuda 8.0
 ```
 - PyTorchNet
 ```
@@ -21,21 +22,43 @@ pip install tqdm
 ```
 conda install -c conda-forge opencv
 ```
+- tensorboard_logger
+```
+pip install tensorboard_logger
+```
+- h5py
+```
+conda install h5py
+```
+- [pyflow](https://github.com/pathak22/pyflow)
+
 
 ## Datasets
 
-### Train、Val Dataset
-The train and val datasets are sampled from [VOC2012](http://cvlab.postech.ac.kr/~mooyeol/pascal_voc_2012/).
-Train dataset has 16700 images and Val dataset has 425 images.
-Download the datasets from [here](https://pan.baidu.com/s/1c17nfeo), 
-and then extract it into `data` directory. Finally run
-```
-python data_utils.py
+### Train, Val, Test Dataset
+The train and val datasets are sampled from [CDVL dataset](https://www.cdvl.org/about/index.php).
+We choose this dataset because we want to extend single frame based SRCNN to multi frame based VSRNet
+Train dataset (uf_X, X=2,3,4) is composed of multiple h5 files:
+Data_CDVL_LR_uf_4_ps_72_fn_5_tpn_225000.h5: patches sampled from LR frames, 225243x5x(72/X)x(72/X)
+Data_CDVL_HR_uf_4_ps_72_fn_5_tpn_225000.h5: patches sampled from HR frames, 225243x5x72x72
+Data_CDVL_LR_Bic_uf_4_ps_72_fn_5_tpn_225000.h5:  patches sampled from Matlab bicubic interpolation upscaled frames, 225243x5x72x72
+Data_CDVL_LR_Bic_MC_uf_4_ps_72_fn_5_tpn_225000.h5:  patches sampled from Matlab bicubic interpolation upscaled and optical flow motion compensated frames, 225243x5x72x72
 
-optional arguments:
---upscale_factor      super resolution upscale factor [default value is 3]
-```
-to generate train and val datasets from VOC2012 with given upscale factors(options: 2、3、4、8).
+Val dataset (uf_X, X=2,3,4) is composed of multiple h5 files:
+Data_CDVL_LR_uf_4_ps_72_fn_5_tpn_45000.h5: patches sampled from LR frames, 45159x5x(72/X)x(72/X)
+Data_CDVL_HR_uf_4_ps_72_fn_5_tpn_45000.h5: patches sampled from HR frames, 45159x5x72x72
+Data_CDVL_LR_Bic_uf_4_ps_72_fn_5_tpn_45000.h5:  patches sampled from Matlab bicubic interpolation upscaled frames, 45159x5x72x72
+Data_CDVL_LR_Bic_MC_uf_4_ps_72_fn_5_tpn_45000.h5:  patches sampled from Matlab bicubic interpolation upscaled and optical flow motion compensated frames, 45159x5x72x72
+
+Test dataset (uf_X, X=2,3,4) is composed of multiple h5 folders:
+LR: LR frames of a scene, (1920/X)x(1080/X)x5xframe_number
+HR: HR frames of a scene, 1920x1080x1xframe_number
+LR_Bic: Matlab Bicubic upscaled LR frames of a scene, 1920x1080x5xframe_number
+LR_Bic_MC: Matlab Bicubic upscaled and [Celiu optical flow](https://people.csail.mit.edu/celiu/OpticalFlow/) motion compensated LR frames of a scene, 1920x1080x1xframe_number
+LR_MC: [Celiu optical flow](https://people.csail.mit.edu/celiu/OpticalFlow/) motion compensated LR frames of a scene, (1920/X)x(1080/X)x5xframe_number
+
+Download the pre-processed h5 files from [here](https://www.dropbox.com/sh/1jz9zeer9wxetx2/AACKqSzh15QPNjyp7Nq_g77_a?dl=0), 
+and then setup the path in the codes.
 
 ### Test Image Dataset
 The test image dataset are sampled from 
@@ -44,395 +67,69 @@ The test image dataset are sampled from
 | **BSD 100** | [Martin et al. ICCV 2001](https://www.eecs.berkeley.edu/Research/Projects/CS/vision/bsds/)
 | **Sun-Hays 80** | [Sun and Hays ICCP 2012](http://cs.brown.edu/~lbsun/SRproj2012/SR_iccp2012.html)
 | **Urban 100** | [Huang et al. CVPR 2015](https://sites.google.com/site/jbhuang0604/publications/struct_sr).
-Download the image dataset from [here](https://pan.baidu.com/s/1nuGyn8l), and then extract it into `data` directory.
+Download the image dataset from [here](TBD), and then setup the path in test_image.py file.
 
 ### Test Video Dataset
-The test dataset are sampled from Jay Chou's Music Videos. Download the video dataset from 
-[here](https://pan.baidu.com/s/1hr81GfM), and then extract it into `data/test/SRF_xx/video` 
-directory, which `xx` means the upscale factor.
+The test video dataset are sampled from [CDVL dataset](https://www.cdvl.org/about/index.php).
+Download the image dataset from [here](https://pan.baidu.com/s/1nuGyn8l), and then setup the path in test_image_SRCNN.py file.
+
 
 ## Usage
 
-### Train
+### Train SRCNN 
+SRCNN need to be trained to initialize VSRNet
 
 ```
-python -m visdom.server & python train.py
+python train_SRCNN.py
 
 optional arguments:
---upscale_factor      super resolution upscale factor [default value is 3]
---num_epochs          super resolution epochs number [default value is 100]
+--upscale_factor      super resolution upscale factor [default value is 4]
+--num_epochs          super resolution epochs number [default value is 800]
 ```
-Visdom now can be accessed by going to `127.0.0.1:8097` in your browser, 
-or your own host address if specified.
 
-If the above does not work, try using an SSH tunnel to your server by 
-adding the following line to your local `~/.ssh/config` :
-`LocalForward 127.0.0.1:8097 127.0.0.1:8097`.
+### Train VSRNet 
 
-Maybe if you are in China, you should download the static resources from 
-[here](https://pan.baidu.com/s/1hr80UbU), and put them on 
-`~/anaconda3/lib/python3.6/site-packages/visdom/static/`.
+```
+python train_VSRNet.py
+
+optional arguments:
+--upscale_factor      super resolution upscale factor [default value is 4]
+--num_epochs          super resolution epochs number [default value is 400]
+```
 
 ### Test Image
 ```
-python test_image.py
+python test_image_SRCNN.py
 
 optional arguments:
 --upscale_factor      super resolution upscale factor [default value is 3]
---model_name          super resolution model name [default value is epoch_3_100.pt]
+--model_name          super resolution model name [default value is epochs_SRCNN/model_epoch_800.pth]
 ```
 The output high resolution images are on `results` directory.
 
-### Test Video
+### Test CDVL Video (preprocessed H5 files) using SRCNN
 ```
-python test_video.py
+python test_video_CDVL_SRCNN.py
 
 optional arguments:
 --upscale_factor      super resolution upscale factor [default value is 3]
---is_real_time        super resolution real time to show [default value is False]
---delay_time          super resolution delay time to show [default value is 1]
---model_name          super resolution model name [default value is epoch_3_100.pt]
+--model_name          SRCNN model name [default value is epochs_SRCNN/model_epoch_800.pth]
+--is_real_time        whether to save results into video file or not [default value is False]
+--delay_time          display delay time [default value is 1]
 ```
-The output high resolution videos are on `results` directory.
+The output high resolution images are on `results` directory.
 
-## Benchmarks
-Adam optimizer were used with learning rate scheduling between epoch 30 and epoch 80.
+### Test CDVL Video (preprocessed H5 files) using VSRNet
+```
+python test_video_CDVL_VSRNet.py
 
-**Upscale Factor = 2**
+optional arguments:
+--upscale_factor      super resolution upscale factor [default value is 3]
+--vsrnet_model_name   VSRNet model name [default value is epochs_SRCNN/model_epoch_800.pth]
+--srcnn_model_name    SRCNN model name [default value is epochs_SRCNN/model_epoch_800.pth]
+--is_real_time        whether to save results into video file or not [default value is False]
+--delay_time          display delay time [default value is 1]
+```
+The output high resolution images are on `results` directory.
 
-Epochs with batch size of 64 takes ~1 minute on a NVIDIA GeForce TITAN X GPU. 
 
-> Loss/PSNR graphs
-
-<table>
-  <tr>
-    <td>
-     <img src="images/2_trainloss.png"/>
-    </td>
-    <td>
-     <img src="images/2_valloss.png"/>
-    </td>
-  </tr>
-</table>
-<table>
-  <tr>
-    <td>
-     <img src="images/2_trainpsnr.png"/>
-    </td>
-    <td>
-     <img src="images/2_valpsnr.png"/>
-    </td>
-  </tr>
-</table>
-
-> Image Results
-
-The left is low resolution image, the middle is high resolution image, and 
-the right is super resolution image(output of the ESPCN).
-
-- Set5
-<table>
-  <tr>
-    <td>
-     <img src="images/2_LR_Set5_004.png"/>
-    </td>
-    <td>
-     <img src="images/2_HR_Set5_004.png"/>
-    </td>
-    <td>
-     <img src="images/2_SR_Set5_004.png"/>
-    </td>
-  </tr>
-</table>
-
-- Set14
-<table>
-  <tr>
-    <td>
-     <img src="images/2_LR_Set14_001.png"/>
-    </td>
-    <td>
-     <img src="images/2_HR_Set14_001.png"/>
-    </td>
-    <td>
-     <img src="images/2_SR_Set14_001.png"/>
-    </td>
-  </tr>
-</table>
-
-- BSD100
-<table>
-  <tr>
-    <td>
-     <img src="images/2_LR_BSD100_063.png"/>
-    </td>
-    <td>
-     <img src="images/2_HR_BSD100_063.png"/>
-    </td>
-    <td>
-     <img src="images/2_SR_BSD100_063.png"/>
-    </td>
-  </tr>
-</table>
-
-- Urban100
-<table>
-  <tr>
-    <td>
-     <img src="images/2_LR_Urban100_014.png"/>
-    </td>
-    <td>
-     <img src="images/2_HR_Urban100_014.png"/>
-    </td>
-    <td>
-     <img src="images/2_SR_Urban100_014.png"/>
-    </td>
-  </tr>
-</table>
-
-> Video Results
-
-The right is low resolution video, the left is super resolution video(output of the ESPCN).
-Click the image to watch the complete video.
-
-[![Watch the video](images/video_SRF_2.png)](http://v.youku.com/v_show/id_XMzIwMDEyODU2MA==.html?spm=a2hzp.8244740.0.0)
-
-**Upscale Factor = 3**
-
-Epochs with batch size of 64 takes ~30 seconds on a NVIDIA GeForce TITAN X GPU. 
-
-> Loss/PSNR graphs
-
-<table>
-  <tr>
-    <td>
-     <img src="images/3_trainloss.png"/>
-    </td>
-    <td>
-     <img src="images/3_valloss.png"/>
-    </td>
-  </tr>
-</table>
-<table>
-  <tr>
-    <td>
-     <img src="images/3_trainpsnr.png"/>
-    </td>
-    <td>
-     <img src="images/3_valpsnr.png"/>
-    </td>
-  </tr>
-</table>
-
-> Image Results
-
-The left is low resolution image, the middle is high resolution image, and 
-the right is super resolution image(output of the ESPCN).
-
-- Set5
-<table>
-  <tr>
-    <td>
-     <img src="images/3_LR_Set5_004.png"/>
-    </td>
-    <td>
-     <img src="images/3_HR_Set5_004.png"/>
-    </td>
-    <td>
-     <img src="images/3_SR_Set5_004.png"/>
-    </td>
-  </tr>
-</table>
-
-- Set14
-<table>
-  <tr>
-    <td>
-     <img src="images/3_LR_Set14_001.png"/>
-    </td>
-    <td>
-     <img src="images/3_HR_Set14_001.png"/>
-    </td>
-    <td>
-     <img src="images/3_SR_Set14_001.png"/>
-    </td>
-  </tr>
-</table>
-
-- BSD100
-<table>
-  <tr>
-    <td>
-     <img src="images/3_LR_BSD100_063.png"/>
-    </td>
-    <td>
-     <img src="images/3_HR_BSD100_063.png"/>
-    </td>
-    <td>
-     <img src="images/3_SR_BSD100_063.png"/>
-    </td>
-  </tr>
-</table>
-
-> Video Results
-
-The right is low resolution video, the left is super resolution video(output of the ESPCN). 
-Click the image to watch the complete video.
-
-[![Watch the video](images/video_SRF_3.png)](http://v.youku.com/v_show/id_XMzIwMDEzMjEyNA==.html?spm=a2hzp.8244740.0.0)
-
-**Upscale Factor = 4**
-
-Epochs with batch size of 64 takes ~20 seconds on a NVIDIA GeForce GTX 1070 GPU. 
-
-> Loss/PSNR graphs
-
-<table>
-  <tr>
-    <td>
-     <img src="images/4_trainloss.png"/>
-    </td>
-    <td>
-     <img src="images/4_valloss.png"/>
-    </td>
-  </tr>
-</table>
-<table>
-  <tr>
-    <td>
-     <img src="images/4_trainpsnr.png"/>
-    </td>
-    <td>
-     <img src="images/4_valpsnr.png"/>
-    </td>
-  </tr>
-</table>
-
-> Image Results
-
-The left is low resolution image, the middle is high resolution image, and 
-the right is super resolution image(output of the ESPCN).
-
-- Set5
-<table>
-  <tr>
-    <td>
-     <img src="images/4_LR_Set5_004.png"/>
-    </td>
-    <td>
-     <img src="images/4_HR_Set5_004.png"/>
-    </td>
-    <td>
-     <img src="images/4_SR_Set5_004.png"/>
-    </td>
-  </tr>
-</table>
-
-- Set14
-<table>
-  <tr>
-    <td>
-     <img src="images/4_LR_Set14_001.png"/>
-    </td>
-    <td>
-     <img src="images/4_HR_Set14_001.png"/>
-    </td>
-    <td>
-     <img src="images/4_SR_Set14_001.png"/>
-    </td>
-  </tr>
-</table>
-
-- BSD100
-<table>
-  <tr>
-    <td>
-     <img src="images/4_LR_BSD100_063.png"/>
-    </td>
-    <td>
-     <img src="images/4_HR_BSD100_063.png"/>
-    </td>
-    <td>
-     <img src="images/4_SR_BSD100_063.png"/>
-    </td>
-  </tr>
-</table>
-
-- Urban100
-<table>
-  <tr>
-    <td>
-     <img src="images/4_LR_Urban100_014.png"/>
-    </td>
-    <td>
-     <img src="images/4_HR_Urban100_014.png"/>
-    </td>
-    <td>
-     <img src="images/4_SR_Urban100_014.png"/>
-    </td>
-  </tr>
-</table>
-
-> Video Results
-
-The right is low resolution video, the left is super resolution video(output of the ESPCN).
-Click the image to watch the complete video.
-
-[![Watch the video](images/video_SRF_4.png)](http://v.youku.com/v_show/id_XMzIwMDEzNDcxMg==.html?spm=a2hzp.8244740.0.0)
-
-**Upscale Factor = 8**
-
-Epochs with batch size of 64 takes ~15 seconds on a NVIDIA GeForce GTX 1070 GPU. 
-
-> Loss/PSNR graphs
-
-<table>
-  <tr>
-    <td>
-     <img src="images/8_trainloss.png"/>
-    </td>
-    <td>
-     <img src="images/8_valloss.png"/>
-    </td>
-  </tr>
-</table>
-<table>
-  <tr>
-    <td>
-     <img src="images/8_trainpsnr.png"/>
-    </td>
-    <td>
-     <img src="images/8_valpsnr.png"/>
-    </td>
-  </tr>
-</table>
-
-> Image Results
-
-The left is low resolution image, the middle is high resolution image, and 
-the right is super resolution image(output of the ESPCN).
-
-- SunHays80
-<table>
-  <tr>
-    <td>
-     <img src="images/8_LR_SunHays80_053.png"/>
-    </td>
-    <td>
-     <img src="images/8_HR_SunHays80_053.png"/>
-    </td>
-    <td>
-     <img src="images/8_SR_SunHays80_053.png"/>
-    </td>
-  </tr>
-</table>
-
-> Video Results
-
-The left is low resolution video, the right is super resolution video(output of the ESPCN).
-Click the image to watch the complete video.
-
-[![Watch the video](images/video_SRF_8.png)](http://v.youku.com/v_show/id_XMzIwMDEzODMzNg==.html?spm=a2hzp.8244740.0.0)
-
-The complete test image results could be downloaded from [here](https://pan.baidu.com/s/1eS5x5HC), and 
-the complete test video results could be downloaded from [here](https://pan.baidu.com/s/1bZIvKU).
