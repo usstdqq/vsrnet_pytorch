@@ -54,7 +54,7 @@ Test dataset (uf_X, X=2,3,4) is composed of multiple h5 folders:
 - LR: LR frames of a scene, (1920/X)x(1080/X)x5xframe_number
 - HR: HR frames of a scene, 1920x1080x1xframe_number
 - LR_Bic: Matlab Bicubic upscaled LR frames of a scene, 1920x1080x5xframe_number
-- LR_Bic_MC: Matlab Bicubic upscaled and [Celiu optical flow](https://people.csail.mit.edu/celiu/OpticalFlow/) motion compensated LR frames of a scene, 1920x1080x1xframe_number
+- LR_Bic_MC: Matlab Bicubic upscaled and [Celiu optical flow](https://people.csail.mit.edu/celiu/OpticalFlow/) motion compensated LR frames of a scene, 1920x1080x5xframe_number
 - LR_MC: [Celiu optical flow](https://people.csail.mit.edu/celiu/OpticalFlow/) motion compensated LR frames of a scene, (1920/X)x(1080/X)x5xframe_number
 
 Download the pre-processed h5 files from [here](https://www.dropbox.com/sh/1jz9zeer9wxetx2/AACKqSzh15QPNjyp7Nq_g77_a?dl=0), 
