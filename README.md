@@ -37,7 +37,8 @@ conda install h5py
 
 ### Train, Val, Test Video Dataset
 The train and val datasets are sampled from [CDVL dataset](https://www.cdvl.org/about/index.php).
-We choose this dataset because we want to extend single frame based SRCNN to multi frame based VSRNet
+We choose this dataset because we want to extend single frame based SRCNN to multi frame based VSRNet.
+
 Train dataset (uf_X, X=2,3,4) is composed of multiple h5 files:
 - Data_CDVL_LR_uf_4_ps_72_fn_5_tpn_225000.h5: patches sampled from LR frames, 225243x5x(72/X)x(72/X)
 - Data_CDVL_HR_uf_4_ps_72_fn_5_tpn_225000.h5: patches sampled from HR frames, 225243x5x72x72
