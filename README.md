@@ -60,6 +60,8 @@ Test dataset (uf_X, X=2,3,4) is composed of multiple h5 folders:
 
 Download the pre-processed h5 files from Dropbox [here](https://www.dropbox.com/sh/1jz9zeer9wxetx2/AACKqSzh15QPNjyp7Nq_g77_a?dl=0) or Baidu Yun [here](https://pan.baidu.com/s/1yqAl03IrLFqidnP4FbLr7A) with code: apkw , and then setup the path in the codes.
 
+If you want to prepare your own train/val/test h5 files, please check the Matlab scripts in the matlab_pre_processing folder. Notice that you would need to install [Celiu optical flow](https://people.csail.mit.edu/celiu/OpticalFlow/) to run the Matlab code.
+
 ### Test Image Dataset
 The test image dataset are sampled from 
 | **Set 5** |  [Bevilacqua et al. BMVC 2012](http://people.rennes.inria.fr/Aline.Roumy/results/SR_BMVC12.html)
