@@ -37,7 +37,8 @@ conda install h5py
 
 ### Train, Val, Test Video Dataset
 The train and val datasets are sampled from [CDVL dataset](https://www.cdvl.org/about/index.php).
-We choose this dataset because we want to extend single frame based SRCNN to multi frame based VSRNet
+We choose this dataset because we want to extend single frame based SRCNN to multi frame based VSRNet.
+
 Train dataset (uf_X, X=2,3,4) is composed of multiple h5 files:
 - Data_CDVL_LR_uf_4_ps_72_fn_5_tpn_225000.h5: patches sampled from LR frames, 225243x5x(72/X)x(72/X)
 - Data_CDVL_HR_uf_4_ps_72_fn_5_tpn_225000.h5: patches sampled from HR frames, 225243x5x72x72
@@ -54,11 +55,10 @@ Test dataset (uf_X, X=2,3,4) is composed of multiple h5 folders:
 - LR: LR frames of a scene, (1920/X)x(1080/X)x5xframe_number
 - HR: HR frames of a scene, 1920x1080x1xframe_number
 - LR_Bic: Matlab Bicubic upscaled LR frames of a scene, 1920x1080x5xframe_number
-- LR_Bic_MC: Matlab Bicubic upscaled and [Celiu optical flow](https://people.csail.mit.edu/celiu/OpticalFlow/) motion compensated LR frames of a scene, 1920x1080x1xframe_number
+- LR_Bic_MC: Matlab Bicubic upscaled and [Celiu optical flow](https://people.csail.mit.edu/celiu/OpticalFlow/) motion compensated LR frames of a scene, 1920x1080x5xframe_number
 - LR_MC: [Celiu optical flow](https://people.csail.mit.edu/celiu/OpticalFlow/) motion compensated LR frames of a scene, (1920/X)x(1080/X)x5xframe_number
 
-Download the pre-processed h5 files from [here](https://www.dropbox.com/sh/1jz9zeer9wxetx2/AACKqSzh15QPNjyp7Nq_g77_a?dl=0), 
-and then setup the path in the codes.
+Download the pre-processed h5 files from Dropbox [here](https://www.dropbox.com/sh/1jz9zeer9wxetx2/AACKqSzh15QPNjyp7Nq_g77_a?dl=0) or Baidu Yun [here](https://pan.baidu.com/s/1yqAl03IrLFqidnP4FbLr7A) with code: apkw , and then setup the path in the codes.
 
 ### Test Image Dataset
 The test image dataset are sampled from 
